@@ -1,10 +1,32 @@
 import { test, expect } from "../../app/e2e/support/fixtures";
 import { gotoAppShell, openSettings } from "../../app/e2e/support/helpers/app";
 
+function readScrollTop(node: HTMLElement | SVGElement) {
+  return node.scrollTop;
+}
+
 test.describe("Settings sidebar scrolling", () => {
   test.use({ viewport: { width: 900, height: 260 } });
 
-  test("desktop drag region does not cover the scroll body", async ({ page }) => {
+  test("keeps the sidebar scroll position when switching settings sections", async ({ page }) => {
+    await gotoAppShell(page);
+    await openSettings(page);
+
+    for (const section of ["providers", "terminals", "providers"]) {
+      const scrollBody = page.locator('[data-testid="settings-sidebar-scroll-body"]:visible');
+      const button = page.getByTestId(`settings-host-section-${section}`);
+      await button.scrollIntoViewIfNeeded();
+      const before = await scrollBody.evaluate(readScrollTop);
+      expect(before).toBeGreaterThan(0);
+      await button.click();
+      await expect(page).toHaveURL(new RegExp(`/settings/hosts/[^/]+/${section}$`));
+      await expect
+        .poll(async () => Math.abs((await scrollBody.evaluate(readScrollTop)) - before))
+        .toBeLessThanOrEqual(1);
+    }
+  });
+
+  test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       window.paseoDesktop = {
         platform: "darwin",
@@ -20,7 +42,9 @@ test.describe("Settings sidebar scrolling", () => {
         },
       };
     });
+  });
 
+  test("desktop drag region does not cover the scroll body", async ({ page }) => {
     await gotoAppShell(page);
     await openSettings(page);
 
