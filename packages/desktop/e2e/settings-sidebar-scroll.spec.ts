@@ -1,9 +1,7 @@
 import { test, expect } from "../../app/e2e/support/fixtures";
 import { gotoAppShell, openSettings } from "../../app/e2e/support/helpers/app";
-
-function readScrollTop(node: HTMLElement | SVGElement) {
-  return node.scrollTop;
-}
+import { getServerId } from "../../app/e2e/support/helpers/server-id";
+import { switchSettingsHostSectionAndPreserveSidebarScroll } from "../../app/e2e/support/helpers/settings";
 
 test.describe("Settings sidebar scrolling", () => {
   test.use({ viewport: { width: 900, height: 260 } });
@@ -12,17 +10,9 @@ test.describe("Settings sidebar scrolling", () => {
     await gotoAppShell(page);
     await openSettings(page);
 
-    for (const section of ["providers", "terminals", "providers"]) {
-      const scrollBody = page.locator('[data-testid="settings-sidebar-scroll-body"]:visible');
-      const button = page.getByTestId(`settings-host-section-${section}`);
-      await button.scrollIntoViewIfNeeded();
-      const before = await scrollBody.evaluate(readScrollTop);
-      expect(before).toBeGreaterThan(0);
-      await button.click();
-      await expect(page).toHaveURL(new RegExp(`/settings/hosts/[^/]+/${section}$`));
-      await expect
-        .poll(async () => Math.abs((await scrollBody.evaluate(readScrollTop)) - before))
-        .toBeLessThanOrEqual(1);
+    const serverId = getServerId();
+    for (const section of ["providers", "terminals", "providers"] as const) {
+      await switchSettingsHostSectionAndPreserveSidebarScroll(page, serverId, section);
     }
   });
 
