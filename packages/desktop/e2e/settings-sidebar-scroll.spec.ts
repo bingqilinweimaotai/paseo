@@ -12,7 +12,7 @@ test.describe("Settings sidebar scrolling", () => {
 
     const serverId = getServerId();
     for (const section of ["providers", "terminals", "providers"] as const) {
-      await switchSettingsHostSectionAndPreserveSidebarScroll(page, serverId, section);
+      await switchSettingsHostSectionAndPreserveSidebarScroll({ page, serverId, section });
     }
   });
 

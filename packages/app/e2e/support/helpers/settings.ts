@@ -69,11 +69,15 @@ export async function openSettingsHostSection(
   await expectAppRoute(page, buildSettingsHostSectionRoute(serverId, section));
 }
 
-export async function switchSettingsHostSectionAndPreserveSidebarScroll(
-  page: Page,
-  serverId: string,
-  section: HostSection,
-): Promise<void> {
+export async function switchSettingsHostSectionAndPreserveSidebarScroll({
+  page,
+  serverId,
+  section,
+}: {
+  page: Page;
+  serverId: string;
+  section: HostSection;
+}): Promise<void> {
   const scrollBody = page.locator('[data-testid="settings-sidebar-scroll-body"]:visible');
   const sectionButton = page.getByTestId(`settings-host-section-${section}`);
 
