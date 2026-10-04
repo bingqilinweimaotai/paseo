@@ -1069,10 +1069,6 @@ interface SettingsSidebarProps {
 // Settings routes replace the screen, so the sidebar's offset must outlive its mount.
 let settingsSidebarScrollOffset = 0;
 
-function rememberSettingsSidebarScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
-  settingsSidebarScrollOffset = event.nativeEvent.contentOffset.y;
-}
-
 function SettingsSidebar({
   view,
   onSelectSection,
@@ -1097,6 +1093,15 @@ function SettingsSidebar({
   const insets = useSafeAreaInsets();
   const isDesktop = layout === "desktop";
   const scrollRef = useRef<ScrollView>(null);
+  const rememberSettingsSidebarScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      // React Native Web can deliver scroll-end events after this sidebar unmounts.
+      if (scrollRef.current !== null) {
+        settingsSidebarScrollOffset = event.nativeEvent.contentOffset.y;
+      }
+    },
+    [],
+  );
   useLayoutEffect(() => {
     if (isDesktop) {
       scrollRef.current?.scrollTo({ y: settingsSidebarScrollOffset, animated: false });
